@@ -7,6 +7,7 @@ from typing import Dict, List
 from sqlalchemy import create_engine, inspect, text
 from langchain_community.utilities import SQLDatabase
 from dotenv import load_dotenv
+import urllib
 
 # PythonREPLTool import - try different locations
 try:
@@ -37,33 +38,15 @@ load_dotenv()
 
 
 def get_database_url() -> str:
-    """Get database URL from .env or default to SQLite."""
-    from pathlib import Path
-    
-    db_url = os.getenv("DATABASE_URL", "sqlite:///robot_vacuum.db")
-    
-    # Always use absolute path for SQLite
-    if db_url.startswith("sqlite:///"):
-        # Extract the database file path
-        db_file = db_url.replace("sqlite:///", "")
-        
-        # If it's already an absolute path (starts with / or drive letter), use it
-        if os.path.isabs(db_file):
-            db_path = Path(db_file)
-        else:
-            # Compute absolute path relative to src directory
-            # tools.py is in src/agents/, so go up two levels to src/
-            src_dir = Path(__file__).parent.parent
-            db_path = src_dir / db_file
-        
-        # Ensure absolute path
-        db_path = db_path.resolve()
-        db_url = f"sqlite:///{db_path}"
-    
-    logger.info(f"Database URL: {db_url}")
-    logger.info(f"Database absolute path: {db_path if 'db_path' in locals() else 'N/A'}")
-    return db_url
-
+    import urllib
+    connect_string = (
+        "DRIVER={ODBC Driver 18 for SQL Server};"
+        "SERVER=localhost,1433;"
+        "DATABASE=mydb;"
+        "Trusted_Connection=yes;"
+        "Encrypt=no;"
+    )
+    return f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(connect_string)}"
 
 def get_db_schema() -> str:
     """
